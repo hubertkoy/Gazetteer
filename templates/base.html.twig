@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %}Welcome{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, height=device-height initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/png" href="{{ asset('assets/favicon.png') }}">
+    <link rel="stylesheet" href="{{ asset('assets/bootstrap/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/leaflet/leaflet.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+    <link rel="stylesheet" href="{{ asset('assets/leaflet/leaflet.extra-markers.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+</head>
+<body>
+<header class="fixed-top">
+    <div class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <div class="d-inline">
+                <a href="#" class="navbar-brand">
+                    <i class="fa fa-globe"></i> <strong>Gazetteer</strong>
+                </a>
+            </div>
+            <div class="d-inline-flex">
+                <select class="form-select" id="countriesList"></select>
+                <button class="navbar-toggler mx-2" type="button" data-bs-toggle="modal" data-bs-target="#countryInfo">
+                    <i class="fa fa-info-circle" title="Country Info"></i>
+                </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="modal" data-bs-target="#weatherInfo">
+                    <i class="fa fa-cloud-sun" title="Weather"></i>
+                </button>
+                <button class="navbar-toggler mx-2" type="button" data-bs-toggle="modal" data-bs-target="#POIsInfo">
+                    <i class="fa fa-map-marked" title="POIs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- country info modal -->
+<div class="modal fade" id="countryInfo" tabindex="-1" aria-labelledby="countryInfoLabel" aria-hidden="true">
+    <div class=" modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="countryInfoLabel">Country Info</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item fw-bold">Continent: <span class="fw-normal" id="infoContinent">...</span>
+                    </li>
+                    <li class="list-group-item fw-bold">Country: <span class="fw-normal" id="infoCountry">...</span>
+                    </li>
+                    <li class="list-group-item fw-bold">Capital: <span class="fw-normal" id="infoCapital">...</span>
+                    </li>
+                    <li class="list-group-item fw-bold">Flag: <span id="infoFlag">...</span></li>
+                    <li class="list-group-item fw-bold">Currency: <span class="fw-normal" id="infoCurrency">...</span>
+                    </li>
+                    <li class="list-group-item fw-bold">Exchange rate: <span class="fw-normal"
+                                                                             id="infoExRate">...</span></li>
+                    <li class="list-group-item fw-bold">Area: <span class="fw-normal"
+                                                                    id="infoArea">... <sup>km2</sup></span></li>
+                    <li class="list-group-item fw-bold">Population: <span class="fw-normal"
+                                                                          id="infoPopulation">...</span></li>
+                </ul>
+            </div>
+            <div class="modal-header">
+                <h5 class="modal-title">Country Description</h5>
+                <hr>
+            </div>
+            <div class="modal-body" id="wikiDescription">
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+
+<!-- weather info modal -->
+<div class="modal fade" id="weatherInfo" tabindex="-1" aria-labelledby="weatherInfoLabel" aria-hidden="true">
+    <div class=" modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="weatherInfoLabel">Current weather</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <h6 class="text-danger" id="currentTime"></h6>
+                    <h5 class="fw-bold" id="currentLocation"></h5>
+                    <h4><span id="currentTemp"></span>°C</h4>
+                    <div class="fw-bold mb-2 fs-6">
+                        Feels like <span id="currentFeelsLike"></span>°C.
+                        <span id="currentMain"></span>.
+                        <span id="currentDescription"></span>.
+                    </div>
+                    <div class="border-start border-danger ms-2 col-10" id="currentWeather">
+                        <ul class="list-group list-group-horizontal">
+                            <li class="list-group-item border-0" id="currentWind"></li>
+                            <li class="list-group-item border-0 px-0" id="currentPressure"></li>
+                            <li class="list-group-item border-0" id="currentHumidity"></li>
+                        </ul>
+                        <ul class="list-group list-group-horizontal">
+                            <li class="list-group-item border-0" id="currentUvi"></li>
+                            <li class="list-group-item border-0 px-0" id="currentDP"></li>
+                            <li class="list-group-item border-0" id="currentVisibility"></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-header">
+                <h5 class="modal-title" id="weatherInfoLabel">8-day forecast</h5>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush" id="weatherForecast"></ul>
+            </div>
+        </div>
+        <div class="modal-footer"></div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="POIsInfo" tabindex="-1" aria-labelledby="POIsInfoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="POIsInfoLabel">Points of interest</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ol class="list-group" id="POIsContent"></ol>
+            </div>
+            <div class="modal-footer mt-2"></div>
+        </div>
+    </div>
+</div>
+
+{% block body %}{% endblock %}
+<script src="{{ asset('assets/jquery/jquery.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="{{ asset('assets/bootstrap/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('assets/fontawesome/js/all.js') }}"></script>
+<script src="{{ asset('assets/leaflet/leaflet.js') }}"></script>
+<script src="{{ asset('assets/leaflet/ leaflet.extra-markers.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+<script type="application/javascript" src="{{ asset('assets/js/script.js') }}"></script>
+</body>
+</html>
