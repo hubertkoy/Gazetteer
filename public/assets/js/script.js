@@ -14,10 +14,11 @@ let markers = new L.FeatureGroup();
 let userLoc;
 let userLocMarker;
 let capitalMarker;
+let userCountry;
 
-numberWithCommas = (num) => {
+/*numberWithCommas = (num) => {
     return num.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
-}
+}*/
 
 L.tileLayer('https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png', {
     maxZoom: 20,
@@ -71,11 +72,15 @@ function getCountryInfo(coords) {
 
             geoJsonLayer = L.geoJSON(borderLines, {style: polyLinesStyle});
             geoJsonLayer.addTo(map);
-            const corner1 = L.latLng(data["bounds"]["northeast"]);
-            const corner2 = L.latLng(data["bounds"]["southwest"]);
-            const bounds = L.latLngBounds(corner1, corner2);
-            map.flyToBounds(bounds);
-
+            if (userLoc) {
+                $(`#countriesList option:contains(${data["info"]["country_name"]})`).attr('selected','selected');
+                map.flyTo(userLocation, 14);
+            } else {
+                const corner1 = L.latLng(data["bounds"]["northeast"]);
+                const corner2 = L.latLng(data["bounds"]["southwest"]);
+                const bounds = L.latLngBounds(corner1, corner2);
+                map.flyToBounds(bounds);
+            }
 
             // update country info
             $("#infoContinent").html(data["info"]["continent"]);
@@ -84,8 +89,8 @@ function getCountryInfo(coords) {
             $('#infoFlag').html(data["info"]["country_flag"]);
             $('#infoCurrency').html(`${data["currency"]["name"]} (${data["currency"]["iso_code"]})`);
             $('#infoExRate').html(`${data["currency"]["exchange_rate"]} ${data["currency"]["iso_code"]} / 1 USD`);
-            $('#infoArea').html(numberWithCommas(data["info"]["area"]));
-            $('#infoPopulation').html(numberWithCommas(data["info"]["population"]));
+            $('#infoArea').html(data["info"]["area"]);
+            $('#infoPopulation').html(data["info"]["population"]);
             $('#wikiDescription').html(data["info"]["country_desc"]).append(`<a href="${data["info"]["country_wiki_url"]}" class="stretched-link">[Open in Wikipedia]</a>`);
 
             /// weather info update
@@ -148,8 +153,11 @@ function getCountryInfo(coords) {
                 markers.addLayer(capitalMarker);
             }
             markers.addTo(map);
+            console.log(data);
         }
-    }).done(() => userLoc = false)
+    }).done(() => {
+        userLoc = false;
+    })
 }
 
 // listener for country select menu
@@ -190,10 +198,11 @@ function setCoords(position) {
     userLocMarker = L.marker([userLocation[0], userLocation[1]], {icon: markerIcon});
     userLocMarker.addTo(map);
     userLocMarker.bindPopup("You are here").openPopup();
+
 }
 
 L.easyButton('fa fa-crosshairs', () => {
-    map.flyTo(userLocation, 14)
+    getCountryInfo(userLocation[0] + ',' +userLocation[1]);
 }).addTo(map);
 
 getLocation(setCoords);
