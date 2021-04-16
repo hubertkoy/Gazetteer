@@ -102,7 +102,7 @@ class CountryInfoController extends AbstractController
             #wiki nearby places
             # create wiki coords url with | to match wiki api for coordinates (lat|lon)
             $wikiCoords = str_replace(",", "|", $coords);
-            $wikiApiUrl = "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cpageimages%7Cdescription%7Cinfo&inprop=url&pithumbsize=144&generator=geosearch&ggsradius=10000&ggslimit=10&ggscoord=$wikiCoords&format=json";
+            $wikiApiUrl = "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cpageimages%7Cdescription%7Cinfo&inprop=url&pithumbsize=144&generator=geosearch&ggsradius=10000&ggslimit=31&colimit=31&ggscoord=$wikiCoords&format=json";
             $response = $client->request('GET', $wikiApiUrl);
             $content = $response->toArray();
             $n = 0;
