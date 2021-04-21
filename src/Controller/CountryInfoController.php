@@ -20,23 +20,24 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class CountryInfoController extends AbstractController
 {
-    #[Route('/country/info', name: 'country_info', methods: ['GET', 'POST'])]
+    #[Route('/country/info', name: 'country_info', methods: ['POST'])]
     public function index(): JsonResponse
     {
         $data = [];
         $openCageDataApiKey = $_ENV['OPEN_CAGE_DATA_API_KEY'];
         $openWeatherMapApiKey = $_ENV['OPEN_WEATHER_MAP_API_KEY'];
         $openExchangeRatesApiKey = $_ENV['OPEN_EXCHANGE_RATES_API_KEY'];
+        $newsApiApiKey = $_ENV['NEWS_API_API_KEY'];
         try {
             $request = Request::createFromGlobals();
             $coords = $request->request->get('coords');
-            //$coords = "54,-2";
             $client = new CurlHttpClient(['verify_peer' => false]);
             $url = "https://api.opencagedata.com/geocode/v1/json?q=$coords&key=$openCageDataApiKey";
             $response = $client->request('GET', $url);
             $content = $response->toArray();
-            //dd($content);
             $content = $content["results"][0];
+
+            #openCage info
             $data["currency"]["symbol"] = $content["annotations"]["currency"]["symbol"];
             $data["currency"]["name"] = $content["annotations"]["currency"]["name"];
             $data["currency"]["iso_code"] = $content["annotations"]["currency"]["iso_code"];
@@ -56,6 +57,7 @@ class CountryInfoController extends AbstractController
             $data["info"]["population"] = $content["population"];
             $data["info"]["continent"] = $content["continentName"];
 
+            # get polygon data from sqlite
             $repository = $this->getDoctrine()->getRepository(Countries::class);
             $country = $repository->findOneBy(['iso_a3' => $data["info"]["country_iso3"]]);
             $data["info"]["country_name"] = $country->getName();
@@ -64,12 +66,13 @@ class CountryInfoController extends AbstractController
             $data["bounds"]["polygon_type"] = $country->getPolygonType();
             $data["bounds"]["polygon_coordinates"] = $country->getPolygonCoordinates();
 
+            #weather info
             $coordsArray = explode(',', $coords);
             $weatherInfoUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=$coordsArray[0]&lon=$coords[1]&units=metric&exclude=minutely,hourly,alerts&lang=en&appid=$openWeatherMapApiKey";
-            # Weather Info
             $response = $client->request('GET', $weatherInfoUrl);
             $content = $response->toArray();
 
+            #timestamp to string data functions
             function currentTimeDate($timestamp, $timezone): string
             {
                 $dt = new DateTime();
@@ -99,23 +102,39 @@ class CountryInfoController extends AbstractController
             $currency_iso_code = $data["currency"]["iso_code"];
             $data["currency"]["exchange_rate"] = $content["rates"][$currency_iso_code];
 
-            #wiki nearby places
-            # create wiki coords url with | to match wiki api for coordinates (lat|lon)
-            $wikiCoords = str_replace(",", "|", $coords);
-            $wikiApiUrl = "https://en.wikipedia.org/w/api.php?action=query&prop=coordinates%7Cpageimages%7Cdescription%7Cinfo&inprop=url&pithumbsize=144&generator=geosearch&ggsradius=10000&ggslimit=31&colimit=31&ggscoord=$wikiCoords&format=json";
-            $response = $client->request('GET', $wikiApiUrl);
+            # get cities (from geonames api):
+            $north = $data["bounds"]["northeast"][0];
+            $south = $data["bounds"]["southwest"][0];
+            $east = $data["bounds"]["northeast"][1];
+            $west = $data["bounds"]["southwest"][1];
+            $geonamesCitiesUrl = "https://secure.geonames.org/citiesJSON?north=$north&south=$south&east=$east&west=$west&username=hubertkoy";
+            $response = $client->request('GET', $geonamesCitiesUrl);
             $content = $response->toArray();
-            $n = 0;
-            $j = 0;
-            foreach ($content["query"]["pages"] as $poi) {
-                if ($n === 0 && $j === 0) {
-                    $j++;
-                    continue;
+            $i = 0;
+            foreach ($content["geonames"] as $city) {
+                if(strtolower($city["countrycode"]) === $data["info"]["country_code"]) {
+                    $data["cities"][$i] = $city;
+                    $i++;
                 }
-                $data["pois"][$n] = $poi;
-                $n++;
             }
 
+            # get country latest news
+            $newsApiUrl = "https://newsapi.org/v2/top-headlines?country={$data["info"]["country_code"]}&apiKey=$newsApiApiKey";
+            $response = $client->request('GET', $newsApiUrl);
+            $content = $response->toArray();
+            $i = 0;
+            foreach ($content["articles"] as $news) {
+                if($news["urlToImage"]) {
+                    $data["news"][$i] = $news;
+                    $i++;
+                }
+            }
+
+            # get covid stats
+            $covidStatsUrl = "https://disease.sh/v3/covid-19/countries/{$data["info"]["country_code"]}?yesterday=true";
+            $response = $client->request('GET', $covidStatsUrl);
+            $content = $response->toArray();
+            $data["covid"] = $content;
 
             #get wiki country description
             $wikiCountryDesc = "https://en.wikipedia.org/api/rest_v1/page/summary/{$data["info"]["country_name"]}?redirect=false";

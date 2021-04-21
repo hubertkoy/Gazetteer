@@ -12,8 +12,6 @@ let geoJsonLayer;
 let userLocationMarker;
 let markers = new L.FeatureGroup();
 let userLoc;
-let userLocMarker;
-let capitalMarker;
 let userCountry;
 
 /*numberWithCommas = (num) => {
@@ -73,14 +71,13 @@ function getCountryInfo(coords) {
             geoJsonLayer = L.geoJSON(borderLines, {style: polyLinesStyle});
             geoJsonLayer.addTo(map);
             if (userLoc) {
-                $(`#countriesList option:contains(${data["info"]["country_name"]})`).attr('selected','selected');
-                map.flyTo(userLocation, 14);
-            } else {
-                const corner1 = L.latLng(data["bounds"]["northeast"]);
-                const corner2 = L.latLng(data["bounds"]["southwest"]);
-                const bounds = L.latLngBounds(corner1, corner2);
-                map.flyToBounds(bounds);
+                $(`#countriesList option:contains(${data["info"]["country_name"]})`).attr('selected', 'selected');
             }
+
+            const corner1 = L.latLng(data["bounds"]["northeast"]);
+            const corner2 = L.latLng(data["bounds"]["southwest"]);
+            const bounds = L.latLngBounds(corner1, corner2);
+            map.fitBounds(bounds);
 
             // update country info
             $("#infoContinent").html(data["info"]["continent"]);
@@ -110,50 +107,66 @@ function getCountryInfo(coords) {
             for (let i = 0; i < data["weather"]["daily"].length; i++) {
                 $('#weatherForecast').append(`
                 <li class="list-group-item">
-                    <img class="weatherIcon" src="https://openweathermap.org/img/wn/${data["weather"]["daily"][i]["weather"][0]["icon"]}@2x.png" alt="">
-                    ${data["weather"]["daily"][i]["dt"]} ${data["weather"]["daily"][i]["temp"]["map"]} / ${data["weather"]["daily"][i]["temp"]["min"]} °C ${data["weather"]["daily"][i]["weather"][0]["description"]}
+                    <div class="row">
+                        <div class="col-4 text-end"><img class="weatherIcon" src="https://openweathermap.org/img/wn/${data["weather"]["daily"][i]["weather"][0]["icon"]}@2x.png" alt=""> ${data["weather"]["daily"][i]["dt"]}</div>
+                        <div class="col-4 text-end">${data["weather"]["daily"][i]["temp"]["min"]} / ${data["weather"]["daily"][i]["temp"]["max"]} °C</div>
+                        <div class="col-4 text-start">${data["weather"]["daily"][i]["weather"][0]["description"]}</div>
+                    </div>
                 </li>`);
             }
 
-            // add poi makers to the map
-            $('#POIsContent').html("");
-            for (let i = 0; i < data["pois"].length; i++) {
-                let poiLat = data["pois"][i]["coordinates"][0]["lat"];
-                let poiLng = data["pois"][i]["coordinates"][0]["lon"];
-
-                $('#POIsContent').append(`
-                    <li class="list-group-item d-flex justify-content-between align-items-start">
-                        <span class="fw-bold">#${i + 1}</span>
-                        <div class="ms-2 me-auto">
-                        <div class="fw-bold">${data["pois"][i]["title"]}</div>
-                            <div>${"description" in data["pois"][i] ? data["pois"][i]["description"] : ""}</div>
-                            <div><a href="${data["pois"][i]["fullurl"]}" class="link-dark" target="_blank">Go to wiki</a>  <button class="btn float-end" onclick="map.flyTo(L.latLng(${poiLat},${poiLng}), 17)">Show on map</button> </div>
-                        </div>
-                    </li>               
-                `);
-
-                let markerIcon = L.ExtraMarkers.icon({
-                    icon: 'fa-number',
-                    markerColor: 'blue',
-                    shape: 'square',
-                    number: i + 1
-                })
-                let poiMarker = L.marker([poiLat, poiLng], {icon: markerIcon}).bindTooltip(data["pois"][i]["title"]);
-                markers.addLayer(poiMarker);
+            // add news
+            $('#newsContent').html("");
+            for (let i = 0; i < data["news"].length; i++) {
+                let active = i === 0 ? " active" : "";
+                $('#newsContent').append(`
+                        <div class="carousel-item${active}">
+                            <img src="${data["news"][i]["urlToImage"]}" class="d-block w-100" alt="...">
+                            <div class="mt-2 text-center">
+                                <h5>${data["news"][i]["title"]}</h5>
+                                <p>${data["news"][i]["description"]}</p>
+                                <a href="${data["news"][i]["url"]}" target="_blank"><i class="fa fa-link"></i> Link</a>
+                            </div>
+                        </div>`);
             }
-            if (!userLoc) {
-                let markerIcon = L.ExtraMarkers.icon({
-                    prefix: 'fa',
-                    icon: 'fa-map-marker-alt',
-                    markerColor: 'yellow'
-                })
-                capitalMarker = L.marker(coords.split(','), {icon: markerIcon});
-                capitalMarker.addTo(map);
-                capitalMarker.bindPopup(`Here is capital ${data["info"]["capital_name"]}`).openPopup();
-                markers.addLayer(capitalMarker);
+
+            // covid statistics
+            $('#covidCases').html(data["covid"]["cases"]);
+            $('#covidTodayCases').html(data["covid"]["todayCases"]);
+            $('#covidDeaths').html(data["covid"]["deaths"]);
+            $('#covidTodayDeaths').html(data["covid"]["todayDeaths"]);
+            $('#covidRecovered').html(data["covid"]["recovered"]);
+            $('#covidTodayRecovered').html(data["covid"]["todayRecovered"]);
+            $('#covidActive').html(data["covid"]["active"]);
+            $('#covidCritical').html(data["covid"]["critical"]);
+            $('#covidTests').html(data["covid"]["tests"]);
+
+            let cityMarkerIcon = L.ExtraMarkers.icon({
+                prefix: 'fa',
+                icon: 'fa-city',
+                markerColor: 'blue'
+            });
+
+            let capitalMarkerIcon = L.ExtraMarkers.icon({
+                prefix: 'fa',
+                icon: 'fa-star',
+                markerColor: 'yellow'
+            });
+
+            const capitalMarker = L.marker([data["cities"][0]["lat"], data["cities"][0]["lng"]], {icon: capitalMarkerIcon}).bindPopup(`<b>Capital City</b><br>${data["cities"][0]["name"]}<br><a href="https://${data["cities"][0]["wikipedia"]}">${data["cities"][0]["wikipedia"]}</a>`);
+            markers.addLayer(capitalMarker);
+            capitalMarker.openPopup();
+
+            //add cities markers
+            for (let i = 1; i < data["cities"].length; i++) {
+                let cityLat = data["cities"][i]["lat"];
+                let cityLng = data["cities"][i]["lng"];
+                let cityName = data["cities"][i]["name"];
+                let cityWikiLink = data["cities"][i]["wikipedia"];
+                let cityMarker = L.marker([cityLat, cityLng], {icon: cityMarkerIcon}).bindPopup(`${cityName}<br><a href="https://${cityWikiLink}">${cityWikiLink}</a>`);
+                markers.addLayer(cityMarker);
             }
             markers.addTo(map);
-            console.log(data);
         }
     }).done(() => {
         userLoc = false;
@@ -181,28 +194,10 @@ function setCoords(position) {
     userLoc = true;
     userLocation = [position.coords.latitude, position.coords.longitude];
     getCountryInfo(position.coords.latitude + ',' + position.coords.longitude);
-    // place marker in user geolocation
-    userLocationMarker = L.circle(userLocation, {
-        color: 'red',
-        fillColor: '#f03',
-        fillOpacity: 0.3,
-        radius: 100
-    });
-    userLocationMarker.addTo(map);
-
-    let markerIcon = L.ExtraMarkers.icon({
-        prefix: 'fa',
-        icon: 'fa-map-marker-alt',
-        markerColor: 'red'
-    })
-    userLocMarker = L.marker([userLocation[0], userLocation[1]], {icon: markerIcon});
-    userLocMarker.addTo(map);
-    userLocMarker.bindPopup("You are here").openPopup();
-
 }
 
 L.easyButton('fa fa-crosshairs', () => {
-    getCountryInfo(userLocation[0] + ',' +userLocation[1]);
+    getCountryInfo(userLocation[0] + ',' + userLocation[1]);
 }).addTo(map);
 
 getLocation(setCoords);

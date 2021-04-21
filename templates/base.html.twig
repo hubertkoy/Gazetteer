@@ -24,22 +24,27 @@
                 </a>
             </div>
             <div class="d-inline-flex">
+                <!-- coutries select list -->
                 <select class="form-select" id="countriesList"></select>
+                <!-- info buttons -->
                 <button class="navbar-toggler mx-2" type="button" data-bs-toggle="modal" data-bs-target="#countryInfo">
                     <i class="fa fa-info-circle" title="Country Info"></i>
                 </button>
                 <button class="navbar-toggler" type="button" data-bs-toggle="modal" data-bs-target="#weatherInfo">
                     <i class="fa fa-cloud-sun" title="Weather"></i>
                 </button>
-                <button class="navbar-toggler mx-2" type="button" data-bs-toggle="modal" data-bs-target="#POIsInfo">
-                    <i class="fa fa-map-marked" title="POIs"></i>
+                <button class="navbar-toggler mx-2" type="button" data-bs-toggle="modal" data-bs-target="#newsInfo">
+                    <i class="fa fa-newspaper" title="News"></i>
+                </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="modal" data-bs-target="#covidInfo">
+                    <i class="fa fa-viruses" title="Covid statistics"></i>
                 </button>
             </div>
         </div>
     </div>
 </header>
 
-<!-- country info modal -->
+<!-- country info -->
 <div class="modal fade" id="countryInfo" tabindex="-1" aria-labelledby="countryInfoLabel" aria-hidden="true">
     <div class=" modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -49,21 +54,54 @@
             </div>
             <div class="modal-body">
                 <ul class="list-group list-group-flush">
-                    <li class="list-group-item fw-bold">Continent: <span class="fw-normal" id="infoContinent">...</span>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Continent:</div>
+                            <div class="col-8"><span id="infoContinent">...</span></div>
+                        </div>
                     </li>
-                    <li class="list-group-item fw-bold">Country: <span class="fw-normal" id="infoCountry">...</span>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Country:</div>
+                            <div class="col-8"><span id="infoCountry">...</span></div>
+                        </div>
                     </li>
-                    <li class="list-group-item fw-bold">Capital: <span class="fw-normal" id="infoCapital">...</span>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Capital:</div>
+                            <div class="col-8"><span id="infoCapital">...</span></div>
+                        </div>
                     </li>
-                    <li class="list-group-item fw-bold">Flag: <span id="infoFlag">...</span></li>
-                    <li class="list-group-item fw-bold">Currency: <span class="fw-normal" id="infoCurrency">...</span>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Flag:</div>
+                            <div class="col-8"><span id="infoFlag">...</span></div>
+                        </div>
                     </li>
-                    <li class="list-group-item fw-bold">Exchange rate: <span class="fw-normal"
-                                                                             id="infoExRate">...</span></li>
-                    <li class="list-group-item fw-bold">Area: <span class="fw-normal"
-                                                                    id="infoArea">... <sup>km2</sup></span></li>
-                    <li class="list-group-item fw-bold">Population: <span class="fw-normal"
-                                                                          id="infoPopulation">...</span></li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Currency:</div>
+                            <div class="col-8"><span id="infoCurrency">...</span></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Exchange rate:</div>
+                            <div class="col-8"><span id="infoExRate">...</span></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Area:</div>
+                            <div class="col-8"><span id="infoArea">...</span><sup>km2</sup></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-4 text-end fw-bold">Population:</div>
+                            <div class="col-8"><span id="infoPopulation">...</span></div>
+                        </div>
+                    </li>
                 </ul>
             </div>
             <div class="modal-header">
@@ -77,7 +115,7 @@
     </div>
 </div>
 
-<!-- weather info modal -->
+<!-- weather info -->
 <div class="modal fade" id="weatherInfo" tabindex="-1" aria-labelledby="weatherInfoLabel" aria-hidden="true">
     <div class=" modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
@@ -95,17 +133,19 @@
                         <span id="currentMain"></span>.
                         <span id="currentDescription"></span>.
                     </div>
-                    <div class="border-start border-danger ms-2 col-10" id="currentWeather">
-                        <ul class="list-group list-group-horizontal">
-                            <li class="list-group-item border-0" id="currentWind"></li>
-                            <li class="list-group-item border-0 px-0" id="currentPressure"></li>
-                            <li class="list-group-item border-0" id="currentHumidity"></li>
-                        </ul>
-                        <ul class="list-group list-group-horizontal">
-                            <li class="list-group-item border-0" id="currentUvi"></li>
-                            <li class="list-group-item border-0 px-0" id="currentDP"></li>
-                            <li class="list-group-item border-0" id="currentVisibility"></li>
-                        </ul>
+                    <div id="currentWeather">
+                        <div class="row border-start border-danger ms-2">
+                            <div class="row">
+                                <div id="currentWind" class="col-3"></div>
+                                <div id="currentPressure" class="col-5"></div>
+                                <div id="currentHumidity" class="col-4"></div>
+                            </div>
+                            <div class="row">
+                                <div id="currentUvi" class="col-3"></div>
+                                <div id="currentDP" class="col-5"></div>
+                                <div id="currentVisibility" class="col-4"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -120,25 +160,108 @@
     </div>
 </div>
 
-
-<div class="modal fade" id="POIsInfo" tabindex="-1" aria-labelledby="POIsInfoLabel" aria-hidden="true">
+<!-- news -->
+<div class="modal fade" id="newsInfo" tabindex="-1" aria-labelledby="newsInfoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="POIsInfoLabel">Points of interest</h5>
+                <h5 class="modal-title" id="newsInfoLabel">Latest news</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <ol class="list-group" id="POIsContent"></ol>
+                <div id="newsCaptions" class="carousel slide" data-bs-ride="carousel">
+                    <div id="newsContent" class="carousel-inner"></div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#newsCaptions"
+                            data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#newsCaptions"
+                            data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
             </div>
-            <div class="modal-footer mt-2"></div>
+        </div>
+    </div>
+</div>
+
+<!-- covid statistics -->
+<div class="modal fade" id="covidInfo" tabindex="-1" aria-labelledby="covidInfoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="covidInfoLabel">Covid statistics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group-flush">
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Cases:</div>
+                            <div id="covidCases" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Today Cases:</div>
+                            <div id="covidTodayCases" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Deaths:</div>
+                            <div id="covidDeaths" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Today Deaths:</div>
+                            <div id="covidTodayDeaths" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Recovered:</div>
+                            <div id="covidRecovered" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Today Recovered:</div>
+                            <div id="covidTodayRecovered" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Active:</div>
+                            <div id="covidActive" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Critical:</div>
+                            <div id="covidCritical" class="col-7"></div>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-5 text-end"> Tests:</div>
+                            <div id="covidTests" class="col-7"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
 {% block body %}{% endblock %}
 <script src="{{ asset('assets/jquery/jquery.min.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
 <script src="{{ asset('assets/bootstrap/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('assets/fontawesome/js/all.js') }}"></script>
 <script src="{{ asset('assets/leaflet/leaflet.js') }}"></script>
